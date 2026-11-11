@@ -1,0 +1,18 @@
+.env
+# Los 9 CSV de Olist no se versionan (135 MB, licencia CC BY-NC-SA): se bajan de Kaggle
+data/*.csv
+data/*.zip
+# Temporales de Excel y Power BI
+~$*
+*.pbix.tmp
+
+# Archivos locales de Power BI
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# Notas de trabajo y archivos que no se publican
+Plan proyecto de Power BI para el portafolio.md
+docs/guia_*.md
+.claude/
+# Copia .pbix anterior al modelo final; el proyecto vigente es el .pbip
+ventas_vs_meta.pbix

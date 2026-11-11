@@ -1,0 +1,44 @@
+relationship 96efa8c4-8133-a01b-5864-55b8706b2dba
+	fromColumn: fact_ventas.fecha
+	toColumn: dim_calendario.fecha
+
+relationship 7432e6c7-c280-da83-3073-84f299285aa5
+	fromColumn: fact_pedidos.fecha
+	toColumn: dim_calendario.fecha
+
+relationship 01ae1c49-8b0c-89bc-3d48-209c56fd1762
+	fromColumn: fact_metas.mes
+	toColumn: dim_calendario.fecha
+
+relationship 1e907d96-6b34-bce5-373d-a3b689274392
+	fromColumn: fact_ventas.product_id
+	toColumn: dim_producto.product_id
+
+relationship b19bda1a-d3c7-4ce5-6cb0-4c476097f217
+	fromColumn: fact_ventas.customer_id
+	toColumn: dim_cliente.customer_id
+
+relationship 921df4f6-7913-e442-b296-8759ad4709d1
+	fromColumn: fact_ventas.seller_id
+	toColumn: dim_vendedor.seller_id
+
+relationship f6fc55ff-6e04-14e7-f30d-23a11861cea9
+	fromColumn: dim_producto.grupo
+	toColumn: dim_grupo.grupo
+
+relationship 54f0137c-f605-95a7-7a86-70a998828b72
+	fromColumn: fact_metas.grupo
+	toColumn: dim_grupo.grupo
+
+relationship a61391ab-9429-1560-5fff-9d3f051c9d3a
+	fromColumn: dim_cliente.region
+	toColumn: dim_region.region
+
+relationship ce7e2969-57ec-8fa8-cce1-65b7dd6e6940
+	fromColumn: fact_metas.region
+	toColumn: dim_region.region
+
+relationship 63bcdcb4-1d59-496d-a12b-b0fc659027f9
+	fromColumn: fact_pedidos.customer_id
+	toColumn: dim_cliente.customer_id
+

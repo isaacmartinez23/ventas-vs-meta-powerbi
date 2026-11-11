@@ -1,0 +1,60 @@
+table dim_vendedor
+	lineageTag: 84ce0a80-39c5-476b-ae72-531fe0795a37
+
+	column seller_id
+		dataType: string
+		lineageTag: 06ac2a35-0324-4cc8-a95f-d16914f8a6bb
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column ciudad
+		dataType: string
+		lineageTag: 0dc8caed-3c6b-44e4-9f58-cbe97075f16e
+		summarizeBy: none
+		sourceColumn: ciudad
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado
+		dataType: string
+		lineageTag: 4d48333a-e9ee-423c-a6de-cf318ff75156
+		summarizeBy: none
+		sourceColumn: estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_estado
+		dataType: string
+		lineageTag: abdf582d-be31-48f5-b8f7-eb5e64bbed34
+		summarizeBy: none
+		sourceColumn: nombre_estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: c409d3f2-ab64-42be-9564-ccf803607b17
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre corto del vendedor para tablas: primeros 8 caracteres del identificador y su estado.
+	column vendedor = LEFT ( dim_vendedor[seller_id], 8 ) & " · " & dim_vendedor[estado]
+		lineageTag: 5bfd50cf-1537-4589-b721-20720e87e19d
+
+	partition dim_vendedor = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("localhost:5433", "olist"),
+				  #"Navegación 1" = Origen{[Schema = "bi", Item = "vw_dim_vendedor"]}[Data]
+				in
+				  #"Navegación 1"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,158 @@
+table fact_pedidos
+	lineageTag: f12b6d01-90a1-4a2a-8fb9-50a8c816ebb5
+
+	column order_id
+		dataType: string
+		isHidden
+		lineageTag: c517e160-54a6-4be2-bd9a-df1aaf9672ae
+		summarizeBy: none
+		sourceColumn: order_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 550b1b2c-6880-46ed-bcd4-0187e40cd9dc
+		summarizeBy: none
+		sourceColumn: fecha
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column customer_id
+		dataType: string
+		isHidden
+		lineageTag: 43639958-a112-4b7b-bec9-01f879a5c630
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column estatus
+		dataType: string
+		lineageTag: fa81790f-73f5-44cc-86fd-83786f362626
+		summarizeBy: none
+		sourceColumn: estatus
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_entregado
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e1d3a00c-365b-41b4-8336-d20456f9aab6
+		summarizeBy: none
+		sourceColumn: fecha_entregado
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fecha_estimada
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 12142f8e-7ff4-49c6-beb3-4e4c3f315226
+		summarizeBy: none
+		sourceColumn: fecha_estimada
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dias_entrega
+		dataType: int64
+		formatString: 0
+		lineageTag: a3f675e8-c3b2-416c-a216-f9155ad54391
+		summarizeBy: none
+		sourceColumn: dias_entrega
+
+		annotation SummarizationSetBy = User
+
+	column dias_retraso
+		dataType: int64
+		formatString: 0
+		lineageTag: ba97f827-296e-4baa-8c51-5127a10850ab
+		summarizeBy: none
+		sourceColumn: dias_retraso
+
+		annotation SummarizationSetBy = User
+
+	column entrega
+		dataType: string
+		lineageTag: 3433c416-8da4-496b-8901-576343c77827
+		summarizeBy: none
+		sourceColumn: entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column calificacion
+		dataType: int64
+		formatString: 0
+		lineageTag: adfb712f-1302-404d-8446-34815de8d9ea
+		summarizeBy: none
+		sourceColumn: calificacion
+
+		annotation SummarizationSetBy = User
+
+	column num_partidas
+		dataType: int64
+		formatString: 0
+		lineageTag: 75dc794c-1446-46bf-8888-0e19f9e3cf49
+		summarizeBy: sum
+		sourceColumn: num_partidas
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_vendedores
+		dataType: int64
+		formatString: 0
+		lineageTag: b50d1a67-f6ff-45e3-8a1b-485260874ed3
+		summarizeBy: sum
+		sourceColumn: num_vendedores
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor_pedido
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 377e0fe8-a9a7-4212-bd1a-6d88eaa00a83
+		summarizeBy: sum
+		sourceColumn: valor_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column flete_pedido
+		dataType: decimal
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 85613d1b-9a38-4101-9d7f-12f80d2c00f6
+		summarizeBy: sum
+		sourceColumn: flete_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	partition fact_pedidos = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("localhost:5433", "olist"),
+				  #"Navegación 1" = Origen{[Schema = "bi", Item = "vw_fact_pedidos"]}[Data],
+				  #"Tipo de columna cambiado" = Table.TransformColumnTypes(#"Navegación 1", {{"valor_pedido", Currency.Type}, {"flete_pedido", Currency.Type}, {"dias_entrega", Int64.Type}, {"dias_retraso", Int64.Type}, {"calificacion", Int64.Type}})
+				in
+				  #"Tipo de columna cambiado"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

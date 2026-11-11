@@ -1,0 +1,15 @@
+/// Parámetro qué pasa si: parte de los clientes satisfechos que vuelve a comprar (0 a 100 %, pasos de 0.5 %). Valor observado en Olist: 3.5 %.
+table Recompra
+	lineageTag: 5e0f8131-b2ca-42cd-a748-4a4698b54db6
+
+	column Recompra
+		formatString: 0.0%
+		lineageTag: 452b8b91-e451-47a3-8214-acedf94007dd
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Recompra]
+
+	partition Recompra = calculated
+		mode: import
+		source = SELECTCOLUMNS ( GENERATESERIES ( 0, 200, 1 ), "Recompra", [Value] / 200 )
+

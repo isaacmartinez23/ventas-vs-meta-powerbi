@@ -1,0 +1,122 @@
+table fact_ventas
+	lineageTag: e669f1e8-8cc8-4921-af70-8d92a01c24b1
+
+	column order_id
+		dataType: string
+		isHidden
+		lineageTag: 9229297f-6f5e-42a0-a419-536df8269cef
+		summarizeBy: none
+		sourceColumn: order_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_item_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 39f1af54-4e17-4849-9212-1341259fc654
+		summarizeBy: sum
+		sourceColumn: order_item_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 82185e76-bef2-4054-82d4-4fb2afca1cc7
+		summarizeBy: none
+		sourceColumn: fecha
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column customer_id
+		dataType: string
+		isHidden
+		lineageTag: fd5f92ed-e844-4548-bbcc-dd7b4e5b4081
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_unique_id
+		dataType: string
+		isHidden
+		lineageTag: 2faa1957-4e3c-4925-896a-614f4fe802e4
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: string
+		isHidden
+		lineageTag: 292fd1ec-af34-4123-89e3-f4bb4ab99855
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_id
+		dataType: string
+		isHidden
+		lineageTag: 23f53647-321a-427f-b24a-18bee40731ee
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 61f812ba-343d-4743-b8be-dcfcba2a4c3f
+		summarizeBy: sum
+		sourceColumn: precio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	column flete
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: 23e59148-6d69-4238-bb13-4367d9b34946
+		summarizeBy: sum
+		sourceColumn: flete
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	partition fact_ventas = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("localhost:5433", "olist"),
+				  #"Navegación 1" = Origen{[Schema = "bi", Item = "vw_fact_ventas"]}[Data],
+				  #"Tipo de columna cambiado" = Table.TransformColumnTypes(#"Navegación 1", {{"precio", Currency.Type}, {"flete", Currency.Type}})
+				in
+				  #"Tipo de columna cambiado"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

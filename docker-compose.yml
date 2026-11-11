@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:18
+    container_name: olist_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: olist
+    ports:
+      # 5433 en el host para no chocar con berka_db (5432)
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./sql:/docker-entrypoint-initdb.d
+      - ./data:/data
+
+volumes:
+  pgdata:

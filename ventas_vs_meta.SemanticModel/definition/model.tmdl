@@ -1,0 +1,30 @@
+model Model
+	culture: es-MX
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-MX
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["dim_cliente","dim_producto","dim_vendedor","fact_pedidos","fact_ventas","RutaExcel","fact_metas","dim_grupo","dim_region","_medidas"]
+
+annotation PBI_ProTooling = ["DevMode","MCP-PBIModeling"]
+
+ref table dim_cliente
+ref table dim_producto
+ref table dim_vendedor
+ref table fact_pedidos
+ref table fact_ventas
+ref table fact_metas
+ref table dim_grupo
+ref table dim_region
+ref table dim_calendario
+ref table _medidas
+ref table 'Mejora entregas'
+ref table Recompra
+
+ref cultureInfo es-MX
+

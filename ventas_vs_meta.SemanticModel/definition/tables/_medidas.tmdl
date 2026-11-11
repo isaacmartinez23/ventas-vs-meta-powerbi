@@ -1,0 +1,332 @@
+table _medidas
+	lineageTag: 5bbf8f0a-cc04-4ffd-9559-c6b453e1d307
+
+	/// Suma del precio de las partidas, sin flete. Excluye pedidos cancelados y unavailable.
+	measure Ventas = SUM ( fact_ventas[precio] )
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 1 Base
+		lineageTag: 5adcd2a1-e501-41c5-bc97-b3b415673063
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	/// Meta mensual simulada (Metas_2018.xlsx). Solo existe por mes, grupo y región; en blanco si se filtra por estado, categoría o vendedor.
+	measure Meta =
+			IF (
+			    ISFILTERED ( dim_cliente ) || ISFILTERED ( dim_producto ) || ISFILTERED ( dim_vendedor ),
+			    BLANK (),
+			    SUM ( fact_metas[meta] )
+			)
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 3 Meta
+		lineageTag: 3bc6b980-383a-41aa-9af5-d75dc77f8e43
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	/// Suma del flete de las partidas.
+	measure Flete = SUM ( fact_ventas[flete] )
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 1 Base
+		lineageTag: a22e3d6e-e8cb-480f-8307-832967825a4e
+
+	/// Pedidos distintos con al menos una partida vendida.
+	measure Pedidos = DISTINCTCOUNT ( fact_ventas[order_id] )
+		formatString: #,0
+		displayFolder: 1 Base
+		lineageTag: 1b5a6cf7-d8bc-4f1b-a1de-bce72d41aa5d
+
+	/// Ventas entre pedidos.
+	measure 'Ticket promedio' = DIVIDE ( [Ventas], [Pedidos] )
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 1 Base
+		lineageTag: 168337e7-53ae-4a53-bddc-c2d042996502
+
+	/// Partidas entre pedidos.
+	measure 'Artículos por pedido' = DIVIDE ( COUNTROWS ( fact_ventas ), [Pedidos] )
+		formatString: #,0.00
+		displayFolder: 1 Base
+		lineageTag: d52a0222-7bd0-44fd-b541-5f270963fdd3
+
+	/// Personas distintas (customer_unique_id), no cuentas por pedido.
+	measure 'Clientes únicos' = DISTINCTCOUNT ( fact_ventas[customer_unique_id] )
+		formatString: #,0
+		displayFolder: 1 Base
+		lineageTag: c7c6694b-5599-494c-8622-90fbebd28810
+
+	/// Auxiliar: verdadero si el periodo en contexto tiene días con ventas.
+	measure '_Periodo con datos' = CALCULATE ( COUNTROWS ( dim_calendario ), dim_calendario[con_ventas] = TRUE () ) > 0
+		isHidden
+		displayFolder: 2 Tiempo
+		lineageTag: 9cc25d23-7c76-4e80-91fc-94d293a1c0da
+
+	/// Ventas acumuladas desde el 1 de enero del año en contexto. En blanco después del último día con ventas.
+	measure 'Ventas YTD' = IF ( [_Periodo con datos], TOTALYTD ( [Ventas], dim_calendario[fecha] ) )
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 2 Tiempo
+		lineageTag: 8de9b482-7d2f-4831-95c1-4b11784b845c
+
+	/// Ventas del mismo periodo del año anterior, solo para los días que tienen ventas en el año actual.
+	measure 'Ventas AA' =
+			CALCULATE (
+			    [Ventas],
+			    CALCULATETABLE (
+			        SAMEPERIODLASTYEAR ( dim_calendario[fecha] ),
+			        dim_calendario[con_ventas] = TRUE ()
+			    )
+			)
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 2 Tiempo
+		lineageTag: feb329b6-a055-4e80-b862-a98f64061029
+
+	/// Variación de ventas contra el mismo periodo del año anterior.
+	measure 'Crecimiento vs AA %' = DIVIDE ( [Ventas] - [Ventas AA], [Ventas AA] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 2 Tiempo
+		lineageTag: 66ee7fc0-23b8-4fe5-9a8a-82c1ea265345
+
+	/// Ventas del mes en contexto y los dos anteriores.
+	measure 'Ventas móvil 3M' =
+			IF (
+			    [_Periodo con datos],
+			    CALCULATE (
+			        [Ventas],
+			        DATESINPERIOD ( dim_calendario[fecha], MAX ( dim_calendario[fecha] ), -3, MONTH )
+			    )
+			)
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 2 Tiempo
+		lineageTag: 42eccb04-c39a-4735-aada-a536d42f97c6
+
+	/// Meta acumulada desde enero.
+	measure 'Meta YTD' = IF ( [_Periodo con datos], TOTALYTD ( [Meta], dim_calendario[fecha] ) )
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		displayFolder: 3 Meta
+		lineageTag: 991e6561-d3e7-41c7-9592-d91803685e69
+
+	/// Ventas entre meta.
+	measure 'Cumplimiento %' = DIVIDE ( [Ventas], [Meta] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 Meta
+		lineageTag: df4ac0fb-681d-4dfc-aaba-692fb10d9756
+
+	/// Ventas YTD entre meta YTD.
+	measure 'Cumplimiento YTD %' = DIVIDE ( [Ventas YTD], [Meta YTD] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 3 Meta
+		lineageTag: 97ec575f-601f-4024-b2f3-5c61aab45289
+
+	/// Ventas menos meta. Negativo = debajo de meta.
+	measure 'Brecha vs meta' = IF ( NOT ISBLANK ( [Meta] ), [Ventas] - [Meta] )
+		formatString: "R$"#,0;-"R$"#,0;"R$"#,0
+		displayFolder: 3 Meta
+		lineageTag: cefc0e9b-57a4-4c97-8290-a9c4d79a3bad
+
+	/// Suma de las brechas negativas por grupo. Los grupos sobre la meta no compensan a los de abajo.
+	measure 'Brecha grupos debajo de meta' =
+			IF (
+			    NOT ISBLANK ( [Meta] ),
+			    SUMX ( VALUES ( dim_grupo[grupo] ), MIN ( [Brecha vs meta], 0 ) )
+			)
+		formatString: "R$"#,0;-"R$"#,0;"R$"#,0
+		displayFolder: 3 Meta
+		lineageTag: 5a8f1f69-1b99-4153-bf6e-73d079b22570
+
+	/// Etiqueta del cumplimiento: En meta (100 % o más), Cerca (90 a 100 %), Lejos (menos de 90 %).
+	measure Semáforo =
+			SWITCH (
+			    TRUE (),
+			    ISBLANK ( [Cumplimiento %] ), BLANK (),
+			    [Cumplimiento %] >= 1, "En meta",
+			    [Cumplimiento %] >= 0.9, "Cerca",
+			    "Lejos"
+			)
+		displayFolder: 3 Meta
+		lineageTag: addd0904-0cc3-478c-909a-3bdb78a22b7e
+
+	/// Color hexadecimal para formato condicional. Rojo solo debajo de meta.
+	measure 'Color cumplimiento' =
+			SWITCH (
+			    TRUE (),
+			    ISBLANK ( [Cumplimiento %] ), BLANK (),
+			    [Cumplimiento %] >= 1, "#1F3A5F",
+			    [Cumplimiento %] >= 0.9, "#E8A0A0",
+			    "#C0392B"
+			)
+		displayFolder: 3 Meta
+		lineageTag: 947e9175-a2bd-44ba-bf77-c738a6e92393
+
+	/// Pedidos con estatus delivered.
+	measure 'Pedidos entregados' = CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[estatus] = "delivered" )
+		formatString: #,0
+		displayFolder: 4 Logística
+		lineageTag: 8d3402e0-5d59-4a06-bd68-d99795c37e91
+
+	/// Pedidos entregados después de la fecha estimada.
+	measure 'Pedidos tarde' = CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[entrega] = "Tarde" )
+		formatString: #,0
+		displayFolder: 4 Logística
+		lineageTag: a222ee28-2de9-471f-90bf-d89b2c02c882
+
+	/// Entregados a más tardar en la fecha estimada, entre entregados con fecha de entrega registrada.
+	measure 'Entrega a tiempo %' =
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[estatus] = "delivered", fact_pedidos[entrega] = "A tiempo" ),
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[estatus] = "delivered", fact_pedidos[entrega] IN { "A tiempo", "Tarde" } )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 4 Logística
+		lineageTag: 25f9bbbe-b848-4834-bb0f-07abfea9f04c
+
+	/// Días promedio de la compra a la entrega.
+	measure 'Días de entrega prom' = AVERAGE ( fact_pedidos[dias_entrega] )
+		formatString: #,0.0
+		displayFolder: 4 Logística
+		lineageTag: 11f02e6c-f327-4e51-a79a-722bbb3d8919
+
+	/// Promedio de la reseña más reciente de cada pedido (1 a 5).
+	measure 'Calificación prom' = AVERAGE ( fact_pedidos[calificacion] )
+		formatString: 0.00
+		displayFolder: 4 Logística
+		lineageTag: f00992a3-5a9b-4fd0-a26e-fdfa99a1177a
+
+	/// Calificación de pedidos tarde menos la de pedidos a tiempo. Solo pedidos con fecha de entrega.
+	measure 'Calificación tarde vs a tiempo' =
+			CALCULATE ( [Calificación prom], fact_pedidos[entrega] = "Tarde" )
+			    - CALCULATE ( [Calificación prom], fact_pedidos[entrega] = "A tiempo" )
+		formatString: 0.00
+		displayFolder: 4 Logística
+		lineageTag: 6af10a21-67c3-4067-b64a-2a9af265054c
+
+	/// Pedidos cancelados entre todos los pedidos.
+	measure 'Cancelación %' =
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[estatus] = "canceled" ),
+			    COUNTROWS ( fact_pedidos )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 4 Logística
+		lineageTag: defe76f3-8411-4cae-9c98-70bd57bcaf47
+
+	/// Versión por grupo de producto o vendedor: filtra los pedidos que tienen al menos una partida en contexto. Un pedido con productos de dos grupos cuenta en los dos.
+	measure 'Calificación prom por grupo' = CALCULATE ( [Calificación prom], TREATAS ( VALUES ( fact_ventas[order_id] ), fact_pedidos[order_id] ) )
+		formatString: 0.00
+		displayFolder: 4 Logística
+		lineageTag: 268ba301-340b-4a62-9b6b-a75475e87835
+
+	/// Versión por grupo de producto o vendedor: filtra los pedidos que tienen al menos una partida en contexto. Un pedido con productos de dos grupos cuenta en los dos.
+	measure 'Entrega a tiempo % por grupo' = CALCULATE ( [Entrega a tiempo %], TREATAS ( VALUES ( fact_ventas[order_id] ), fact_pedidos[order_id] ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 4 Logística
+		lineageTag: de306d90-87d4-42ee-a109-56f0a88b83a3
+
+	/// Pedidos tarde con 1 o 2 estrellas, entre pedidos tarde con reseña.
+	measure '% reseñas 1-2 tarde' =
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[entrega] = "Tarde", fact_pedidos[calificacion] IN { 1, 2 } ),
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[entrega] = "Tarde", fact_pedidos[calificacion] IN { 1, 2, 3, 4, 5 } )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 5 Qué pasa si
+		lineageTag: e94c900b-6e05-4d87-9187-2eca5fc0921b
+
+	/// Pedidos a tiempo con 1 o 2 estrellas, entre pedidos a tiempo con reseña.
+	measure '% reseñas 1-2 a tiempo' =
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[entrega] = "A tiempo", fact_pedidos[calificacion] IN { 1, 2 } ),
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[entrega] = "A tiempo", fact_pedidos[calificacion] IN { 1, 2, 3, 4, 5 } )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 5 Qué pasa si
+		lineageTag: b8b556b2-386a-4386-9522-f08db4cbbf6e
+
+	/// Reseñas de 1 a 2 estrellas que se evitarían si esa parte de los pedidos tarde llegara a tiempo. Estimación.
+	measure 'Reseñas 1-2 evitables' =
+			VAR mejora = SELECTEDVALUE ( 'Mejora entregas'[Mejora entregas], 0.5 )
+			RETURN
+			    [Pedidos tarde] * ( [% reseñas 1-2 tarde] - [% reseñas 1-2 a tiempo] ) * mejora
+		formatString: #,0
+		displayFolder: 5 Qué pasa si
+		lineageTag: 18209ec9-aa07-4275-a407-af6d40254832
+
+	/// Estimación: reseñas evitadas por tasa de recompra por ticket promedio. Supone que un cliente con 1 a 2 estrellas no recompra.
+	measure 'Ventas recuperables' =
+			VAR recompra = SELECTEDVALUE ( 'Recompra'[Recompra], 0.035 )
+			RETURN
+			    [Reseñas 1-2 evitables] * recompra * [Ticket promedio]
+		formatString: "R$"#,0;-"R$"#,0;"R$"#,0
+		displayFolder: 5 Qué pasa si
+		lineageTag: 9997b0a9-9901-401b-87a9-d5fc227e50d2
+
+	/// Ventas recuperables entre la brecha de los grupos debajo de meta.
+	measure '% de la brecha recuperable' = DIVIDE ( [Ventas recuperables], ABS ( [Brecha grupos debajo de meta] ) )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 5 Qué pasa si
+		lineageTag: 34959f36-21cd-4a96-8890-b20c5a78dfc3
+
+	/// Pedidos tarde entre pedidos con fecha de entrega.
+	measure '% pedidos tarde' =
+			DIVIDE (
+			    [Pedidos tarde],
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[entrega] IN { "A tiempo", "Tarde" } )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 6 Visuales
+		lineageTag: 2d6dad80-1285-4a55-853e-2cff8e3398bb
+
+	/// Reparto de los pedidos con reseña por calificación, dentro de cada grupo de entrega. Para el histograma de la página 3.
+	measure '% de pedidos' =
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), KEEPFILTERS ( fact_pedidos[calificacion] IN { 1, 2, 3, 4, 5 } ) ),
+			    CALCULATE ( COUNTROWS ( fact_pedidos ), fact_pedidos[calificacion] IN { 1, 2, 3, 4, 5 } )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 6 Visuales
+		lineageTag: 823535ab-e513-4375-a52d-fc3445f154cd
+
+	/// Cumplimiento de la región a la que pertenece el estado. La meta no existe por estado. Para el tooltip del mapa.
+	measure 'Cumplimiento de la región' =
+			CALCULATE (
+			    [Cumplimiento %],
+			    REMOVEFILTERS ( dim_cliente ),
+			    TREATAS ( VALUES ( dim_cliente[region] ), dim_region[region] )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 6 Visuales
+		lineageTag: 4f113e27-87c7-43a6-a130-beec515d0070
+
+	/// Pedidos tarde que incluyen partidas del vendedor en contexto.
+	measure 'Pedidos tarde por vendedor' = CALCULATE ( [Pedidos tarde], TREATAS ( VALUES ( fact_ventas[order_id] ), fact_pedidos[order_id] ) )
+		formatString: #,0
+		displayFolder: 6 Visuales
+		lineageTag: ded89829-8819-4f30-bda5-9a8c85bb27f5
+
+	/// Color del texto sobre el fondo de Color cumplimiento: oscuro sobre el rojo claro (90 a 100 %), blanco en los demás casos.
+	measure 'Color texto cumplimiento' =
+			SWITCH (
+			    TRUE (),
+			    ISBLANK ( [Cumplimiento %] ), BLANK (),
+			    [Cumplimiento %] >= 1, "#FFFFFF",
+			    [Cumplimiento %] >= 0.9, "#262626",
+			    "#FFFFFF"
+			)
+		displayFolder: 3 Meta
+		lineageTag: 7dd7ea99-0315-42fc-9424-bedfe76797d7
+
+	column 'Columna 1'
+		dataType: string
+		isHidden
+		lineageTag: 6073953b-ed96-4e09-8a7e-42b9760a114d
+		summarizeBy: none
+		sourceColumn: Columna 1
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _medidas = m
+		mode: import
+		source =
+				let
+				  Origen = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Columna 1" = _t])
+				in
+				  Origen
+

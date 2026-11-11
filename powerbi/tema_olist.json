@@ -1,0 +1,32 @@
+{
+  "name": "Olist ventas vs meta",
+  "dataColors": ["#1F3A5F", "#6C8EBF", "#9E9E9E", "#C9D3E0", "#3E5C82", "#B0B0B0", "#C0392B", "#E8A0A0"],
+  "background": "#FFFFFF",
+  "foreground": "#262626",
+  "tableAccent": "#1F3A5F",
+  "good": "#1F3A5F",
+  "neutral": "#9E9E9E",
+  "bad": "#C0392B",
+  "maximum": "#1F3A5F",
+  "center": "#C9D3E0",
+  "minimum": "#FFFFFF",
+  "textClasses": {
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#262626" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#595959" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 26, "color": "#1F3A5F" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 11, "color": "#262626" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [{ "show": false }],
+        "dropShadow": [{ "show": false }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#F5F6F8" } }, "transparency": 0 }]
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+table dim_producto
+	lineageTag: 706f5ba0-7a77-4dfb-9405-0789fc20441e
+
+	column product_id
+		dataType: string
+		lineageTag: f34b7e78-541c-4174-b6f4-9cf74df346d7
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria
+		dataType: string
+		lineageTag: 5d989165-2012-43cd-9171-e78d488e830e
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria_en
+		dataType: string
+		lineageTag: c4f70e98-767f-4bda-850a-a6e759268e7f
+		summarizeBy: none
+		sourceColumn: categoria_en
+
+		annotation SummarizationSetBy = Automatic
+
+	column grupo
+		dataType: string
+		isHidden
+		lineageTag: 0edde011-5ae0-4b0c-93fb-e6375df55d36
+		summarizeBy: none
+		sourceColumn: grupo
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_producto = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("localhost:5433", "olist"),
+				  #"Navegación 1" = Origen{[Schema = "bi", Item = "vw_dim_producto"]}[Data]
+				in
+				  #"Navegación 1"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

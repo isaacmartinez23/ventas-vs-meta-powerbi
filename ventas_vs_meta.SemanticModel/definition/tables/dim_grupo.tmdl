@@ -1,0 +1,26 @@
+table dim_grupo
+	lineageTag: e56b7fc1-679b-43a9-9858-c753d2348637
+
+	column grupo
+		dataType: string
+		lineageTag: baf93d7e-91bf-460b-b08b-c32dd756acbb
+		summarizeBy: none
+		sourceColumn: grupo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_grupo = m
+		mode: import
+		source =
+				let
+				  Origen = Excel.Workbook(File.Contents("C:\Users\isaac\Desktop\proyecto de Power BI\excel\Metas_2018.xlsx"), null, true),
+				  #"Navegación 1" = Origen{[Item = "t_mapeo_grupos", Kind = "Table"]}[Data],
+				  #"Tipo de columna cambiado" = Table.TransformColumnTypes(#"Navegación 1", {{"categoria", type text}, {"grupo", type text}}, "es"),
+				  #"Columnas con nombre cambiado" = Table.RenameColumns(#"Tipo de columna cambiado", {{"grupo", "grupo"}}),
+				  #"Columnas quitadas" = Table.RemoveColumns(#"Columnas con nombre cambiado", {"categoria"}),
+				  #"Duplicados quitados" = Table.Distinct(#"Columnas quitadas", {"grupo"})
+				in
+				  #"Duplicados quitados"
+
+	annotation PBI_ResultType = Table
+

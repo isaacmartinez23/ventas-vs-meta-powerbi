@@ -1,0 +1,67 @@
+table fact_metas
+	lineageTag: 8e6a3e25-e258-47ca-bebe-cc5a15cfe7d2
+
+	column mes
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: b426ed30-06fb-4b46-9ded-1081ea963c2d
+		summarizeBy: none
+		sourceColumn: mes
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column grupo
+		dataType: string
+		isHidden
+		lineageTag: e09a5060-11f7-4959-ada5-a6ce8efafba7
+		summarizeBy: none
+		sourceColumn: grupo
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		isHidden
+		lineageTag: f1b82a8c-62c3-4385-be61-c1fc91b74603
+		summarizeBy: none
+		sourceColumn: region
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column meta
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.###############;-\$#,0.###############;\$#,0.###############
+		lineageTag: ffa0215d-75c2-401d-b903-11b575c3fa92
+		summarizeBy: sum
+		sourceColumn: meta
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-MX"}
+
+	partition fact_metas = m
+		mode: import
+		source =
+				let
+				    Origen = Excel.Workbook(File.Contents("C:\Users\isaac\Desktop\proyecto de Power BI\excel\Metas_2018.xlsx"), null, true),
+				    Tabla = Origen{[Item = "t_metas_ancho", Kind = "Table"]}[Data],
+				    Despivotada = Table.UnpivotOtherColumns(Tabla, {"grupo", "region"}, "mes_texto", "meta"),
+				    ConMes = Table.AddColumn(Despivotada, "mes", each #date(Number.FromText(Text.Start([mes_texto], 4)), Number.FromText(Text.End([mes_texto], 2)), 1), type date),
+				    SinTexto = Table.RemoveColumns(ConMes, {"mes_texto"}),
+				    Tipos = Table.TransformColumnTypes(SinTexto, {{"grupo", type text}, {"region", type text}, {"meta", Currency.Type}}),
+				    Orden = Table.ReorderColumns(Tipos, {"mes", "grupo", "region", "meta"})
+				in
+				    Orden
+
+	annotation PBI_ResultType = Table
+

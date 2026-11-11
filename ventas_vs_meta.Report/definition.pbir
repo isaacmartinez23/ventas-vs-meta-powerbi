@@ -1,0 +1,8 @@
+{
+  "version": "4.0",
+  "datasetReference": {
+    "byPath": {
+      "path": "../ventas_vs_meta.SemanticModel"
+    }
+  }
+}

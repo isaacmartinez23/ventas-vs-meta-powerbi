@@ -1,0 +1,15 @@
+/// Parámetro qué pasa si: parte de los pedidos tarde que pasaría a llegar a tiempo (0 a 100 %).
+table 'Mejora entregas'
+	lineageTag: 269572ef-adf5-448a-88c3-9d9bfc33eb1e
+
+	column 'Mejora entregas'
+		formatString: 0%
+		lineageTag: 56d4336c-a9fc-4908-9445-95d202344b67
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mejora entregas]
+
+	partition 'Mejora entregas' = calculated
+		mode: import
+		source = SELECTCOLUMNS ( GENERATESERIES ( 0, 100, 5 ), "Mejora entregas", [Value] / 100 )
+

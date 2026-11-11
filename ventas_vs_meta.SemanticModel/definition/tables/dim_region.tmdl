@@ -1,0 +1,25 @@
+table dim_region
+	lineageTag: 64bc2af3-745c-4972-87e9-dc8c34b64eab
+
+	column region
+		dataType: string
+		lineageTag: b3a6f55a-1607-483d-8581-b518007344ea
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_region = m
+		mode: import
+		source =
+				let
+				  Origen = Excel.Workbook(File.Contents("C:\Users\isaac\Desktop\proyecto de Power BI\excel\Metas_2018.xlsx"), null, true),
+				  #"Navegación 1" = Origen{[Item = "t_mapeo_regiones", Kind = "Table"]}[Data],
+				  #"Tipo de columna cambiado" = Table.TransformColumnTypes(#"Navegación 1", {{"estado", type text}, {"nombre_estado", type text}, {"region", type text}}, "es"),
+				  #"Columnas quitadas" = Table.RemoveColumns(#"Tipo de columna cambiado", {"estado", "nombre_estado"}),
+				  #"Duplicados quitados" = Table.Distinct(#"Columnas quitadas", {"region"})
+				in
+				  #"Duplicados quitados"
+
+	annotation PBI_ResultType = Table
+

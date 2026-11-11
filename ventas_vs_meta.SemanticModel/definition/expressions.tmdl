@@ -1,0 +1,9 @@
+expression RutaExcel =
+		let
+		    Origen = "C:\Users\isaac\Desktop\proyecto de Power BI\excel\Metas_2018.xlsx" meta [IsParameterQuery = true, IsParameterQueryRequired = false, Type = type text]
+		in
+		    Origen
+	lineageTag: a6893df2-9596-4ee6-a49c-5eaa5fb98826
+
+	annotation PBI_ResultType = Text
+

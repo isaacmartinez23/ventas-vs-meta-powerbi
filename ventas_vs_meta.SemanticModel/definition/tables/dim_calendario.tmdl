@@ -1,0 +1,103 @@
+table dim_calendario
+	lineageTag: a2a2546f-cdfc-4f54-8a13-e30838ec8e51
+	dataCategory: Time
+
+	column fecha
+		isKey
+		formatString: General Date
+		lineageTag: 395e208f-ed97-486c-b124-f7d20fdd43c3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [fecha]
+
+		annotation SummarizationSetBy = Automatic
+
+	column anio
+		formatString: 0
+		lineageTag: 15434e02-3117-443f-a3c7-b19a86e2b140
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [anio]
+
+		annotation SummarizationSetBy = User
+
+	column mes_num
+		formatString: 0
+		lineageTag: 659db315-7660-4e99-a53b-1b6b68349bee
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [mes_num]
+
+		annotation SummarizationSetBy = User
+
+	column mes
+		lineageTag: 5c9e8fbc-26ee-43ad-ac1b-54cdb81ccc00
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [mes]
+		sortByColumn: mes_num
+
+		annotation SummarizationSetBy = Automatic
+
+	column anio_mes
+		lineageTag: dbef893c-1131-4a63-968c-4001dbc804b5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [anio_mes]
+
+		annotation SummarizationSetBy = Automatic
+
+	column inicio_mes
+		formatString: General Date
+		lineageTag: 9dc4ee69-001f-495c-a2b0-cad90eb6d9f1
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [inicio_mes]
+
+		annotation SummarizationSetBy = Automatic
+
+	column trimestre
+		lineageTag: 1a46fe7b-c060-435d-b47f-86445b2a80ef
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [trimestre]
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_dia_habil
+		formatString: 0
+		lineageTag: b239226b-d89d-4c44-8268-09dc100620dc
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [es_dia_habil]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero hasta el último día con ventas (29 ago 2018). Lo usan las medidas de tiempo.
+	column con_ventas = dim_calendario[fecha] <= MAX ( fact_ventas[fecha] )
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 3a761eee-dc1d-451a-873d-880bd28c9ca4
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_calendario = calculated
+		mode: import
+		source =
+				
+				VAR base = CALENDAR ( DATE ( 2017, 1, 1 ), DATE ( 2018, 12, 31 ) )
+				RETURN
+				    ADDCOLUMNS (
+				        SELECTCOLUMNS ( base, "fecha", [Date] ),
+				        "anio", YEAR ( [fecha] ),
+				        "mes_num", MONTH ( [fecha] ),
+				        "mes", FORMAT ( [fecha], "mmm" ),
+				        "anio_mes", FORMAT ( [fecha], "yyyy-mm" ),
+				        "inicio_mes", DATE ( YEAR ( [fecha] ), MONTH ( [fecha] ), 1 ),
+				        "trimestre", "T" & QUARTER ( [fecha] ),
+				        "es_dia_habil", IF ( WEEKDAY ( [fecha], 2 ) <= 5, 1, 0 )
+				    )
+
+	annotation PBI_Id = cddb3b41a1be40c481d75623e5ba95f4
+

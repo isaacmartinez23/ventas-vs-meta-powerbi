@@ -1,0 +1,75 @@
+table dim_cliente
+	lineageTag: d36bb283-4be9-4213-b10b-d3e0b99258c6
+
+	column customer_id
+		dataType: string
+		lineageTag: 4de4deb3-8e1c-41ff-a163-bd0033bcf481
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: 66143d3a-7166-4d10-9b8c-22759239e112
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column ciudad
+		dataType: string
+		lineageTag: 06c350e2-e8e4-466b-ae47-0b876e63fef9
+		summarizeBy: none
+		sourceColumn: ciudad
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado
+		dataType: string
+		lineageTag: 991d8a49-0b62-4fe9-a0d3-9ade671e122a
+		summarizeBy: none
+		sourceColumn: estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_estado
+		dataType: string
+		lineageTag: 6a9b8381-c8ae-4002-a418-9dfe9e965fbf
+		dataCategory: StateOrProvince
+		summarizeBy: none
+		sourceColumn: nombre_estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		isHidden
+		lineageTag: 192d6d99-3614-47e7-81fe-1c4508ad597f
+		summarizeBy: none
+		sourceColumn: region
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ubicacion
+		dataType: string
+		lineageTag: e11dc00f-5539-4241-bd40-b9cd0b30c9cb
+		summarizeBy: none
+		sourceColumn: ubicacion
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_cliente = m
+		mode: import
+		source =
+				let
+				  Origen = PostgreSQL.Database("localhost:5433", "olist"),
+				  #"Navegación 1" = Origen{[Schema = "bi", Item = "vw_dim_cliente"]}[Data],
+				  #"Personalizado agregado" = Table.TransformColumnTypes(Table.AddColumn(#"Navegación 1", "ubicacion", each [nombre_estado] & ", Brasil"), {{"ubicacion", type text}})
+				in
+				  #"Personalizado agregado"
+
+	annotation PBI_ResultType = Table
+
